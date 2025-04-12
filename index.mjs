@@ -1,4 +1,5 @@
 import { Rcon } from 'rcon-client';
+import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
 
 const otpStore = new Map(); // ユーザーIDとOTPを一時的に保持
 const headers = {
@@ -7,6 +8,8 @@ const headers = {
   'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
   'Content-Type': 'application/json'
 };
+
+const dynamoDbClient = new DynamoDBClient({ region: 'ap-northeast-1' }); // 適切なリージョンを指定
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -52,9 +55,20 @@ export const handler = async (event) => {
     const storedOtp = otpStore.get(userId);
     if (storedOtp && storedOtp === inputOtp) {
       otpStore.delete(userId); // OTPを削除
+      // DynamoDBからcreditsを取得
+      const params = {
+        TableName: 'PlayerCredits', // テーブル名を指定
+        Key: {
+          playerId: { S: userId }, // userIdをキーとして指定
+        },
+        ProjectionExpression: 'credits', // 必要な属性のみ取得
+      };
+      const command = new GetItemCommand(params);
+      const result = await dynamoDbClient.send(command);
+      const credits = result.Item?.credits?.N || '0'; // creditsを取得 (デフォルト値は0)
       return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'OTP verified successfully.' }),
+        body: JSON.stringify({ message: 'OTP verified successfully.', credits: parseInt(credits, 10) }),
         headers: headers,
       };
     } else {

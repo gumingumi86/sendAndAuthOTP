@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "aws-sdk": "^2.1692.0",
     "rcon-client": "^4.2.5"
   }
 }
