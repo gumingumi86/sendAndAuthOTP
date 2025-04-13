@@ -61,11 +61,11 @@ export const handler = async (event) => {
         Key: {
           playerId: { S: userId }, // userIdをキーとして指定
         },
-        ProjectionExpression: 'credits', // 必要な属性のみ取得
+        ProjectionExpression: 'credit', // 必要な属性のみ取得
       };
       const command = new GetItemCommand(params);
       const result = await dynamoDbClient.send(command);
-      const credits = result.Item?.credits?.N || '0'; // creditsを取得 (デフォルト値は0)
+      const credits = result.Item?.credit?.N || '0'; // creditsを取得 (デフォルト値は0)
       return {
         statusCode: 200,
         body: JSON.stringify({ message: 'OTP verified successfully.', credits: parseInt(credits, 10) }),
