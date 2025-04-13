@@ -3,7 +3,7 @@ import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
 
 const otpStore = new Map(); // ユーザーIDとOTPを一時的に保持
 const headers = {
-  'Access-Control-Allow-Origin': 'https://www.usagi-server.com',
+  'Access-Control-Allow-Origin': process.env.ALLOW_ORIGIN,
   'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
   'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
   'Content-Type': 'application/json'
@@ -28,9 +28,9 @@ export const handler = async (event) => {
 
     // Rconを使ってMinecraft内のユーザーにOTPを送信
     const rcon = new Rcon({
-      host: '13.231.11.150', // Rconサーバーのホスト
-      port: 25575,       // Rconサーバーのポート
-      password: 'rcon-password', // Rconのパスワード
+      host: process.env.RCON_HOST,
+      port: parseInt(process.env.RCON_PORT, 10),
+      password: process.env.RCON_PASSWORD,
     });
 
     try {
@@ -57,7 +57,7 @@ export const handler = async (event) => {
       otpStore.delete(userId); // OTPを削除
       // DynamoDBからcreditsを取得
       const params = {
-        TableName: 'PlayerCredits', // テーブル名を指定
+        TableName: process.env.CREGIT_TABLE, // テーブル名を指定
         Key: {
           playerId: { S: userId }, // userIdをキーとして指定
         },
